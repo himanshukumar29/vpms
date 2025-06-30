@@ -16,13 +16,21 @@ public class ParkingLot {
     }
 
     public void parkVehicle(Vehicle v) {
+        String regNum = v.getRegNumber();
+
+        if (activeTickets.containsKey(regNum)) {
+            System.out.println("Vehicle with registration number " + regNum + " is already parked.");
+            return;
+        }
+
         if (availableSpots.isEmpty()) {
             System.out.println("No available parking spots.");
             return;
         }
+
         ParkingSpot spot = availableSpots.pollFirst();
         parkedVehicles.add(v);
-        activeTickets.put(v.getRegNumber(), new Ticket(v));
+        activeTickets.put(regNum, new Ticket(v, spot));
         System.out.println("Parked " + v.getType() + " at Spot #" + spot.getSpotNumber());
     }
 
@@ -32,12 +40,16 @@ public class ParkingLot {
             System.out.println("Vehicle not found.");
             return;
         }
+
         Vehicle v = ticket.getVehicle();
+        ParkingSpot spot = ticket.getSpot(); // recover original spot
         long duration = (System.currentTimeMillis() - ticket.getEntryTime()) / (60 * 1000);
         double fee = feeCalc.calculateFee(duration);
+
         parkedVehicles.remove(v);
         activeTickets.remove(regNumber);
-        availableSpots.add(new ParkingSpot(availableSpots.size() + 1));
+        availableSpots.add(spot);
+
         System.out.printf("Vehicle %s exited. Duration: %d min. Fee: ₹%.2f%n", regNumber, duration, fee);
     }
 
