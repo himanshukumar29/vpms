@@ -11,80 +11,106 @@ public class ParkingLot {
     private Map<String, ParkingSpot> vehicleSpotMap = new HashMap<>();
 
     public ParkingLot(int totalSpots) {
-        for (int i = 1; i <= totalSpots; i++) {
-            availableSpots.add(new ParkingSpot(i));
+        try {
+            for (int i = 1; i <= totalSpots; i++) {
+                availableSpots.add(new ParkingSpot(i));
+            }
+        } catch (Exception e) {
+            System.out.println("Error initializing parking lot: " + e.getMessage());
         }
     }
 
     public void parkVehicle(Vehicle v) {
-        if (activeTickets.containsKey(v.getRegNumber())) {
-            System.out.println("Vehicle with registration number " + v.getRegNumber() + " is already parked.");
-            return;
-        }
+        try {
+            if (activeTickets.containsKey(v.getRegNumber())) {
+                System.out.println("Vehicle with registration number " + v.getRegNumber() + " is already parked.");
+                return;
+            }
 
-        if (availableSpots.isEmpty()) {
-            System.out.println("No available parking spots.");
-            return;
-        }
+            if (availableSpots.isEmpty()) {
+                System.out.println("No available parking spots.");
+                return;
+            }
 
-        ParkingSpot spot = availableSpots.pollFirst();
-        parkedVehicles.add(v);
-        activeTickets.put(v.getRegNumber(), new Ticket(v));
-        vehicleSpotMap.put(v.getRegNumber(), spot);
-        System.out.println("Parked " + v.getType() + " at Spot #" + spot.getSpotNumber());
+            ParkingSpot spot = availableSpots.pollFirst();
+            parkedVehicles.add(v);
+            activeTickets.put(v.getRegNumber(), new Ticket(v));
+            vehicleSpotMap.put(v.getRegNumber(), spot);
+            System.out.println("Parked " + v.getType() + " at Spot #" + spot.getSpotNumber());
+        } catch (Exception e) {
+            System.out.println("Error parking vehicle: " + e.getMessage());
+        }
     }
 
     public void releaseVehicle(String regNumber) {
-        Ticket ticket = activeTickets.get(regNumber);
-        if (ticket == null) {
-            System.out.println("Vehicle not found.");
-            return;
+        try {
+            Ticket ticket = activeTickets.get(regNumber);
+            if (ticket == null) {
+                System.out.println("Vehicle not found.");
+                return;
+            }
+
+            Vehicle v = ticket.getVehicle();
+            long duration = (System.currentTimeMillis() - ticket.getEntryTime()) / (60 * 1000);
+            double fee = feeCalc.calculateFee(duration);
+
+            parkedVehicles.remove(v);
+            activeTickets.remove(regNumber);
+
+            ParkingSpot spot = vehicleSpotMap.remove(regNumber);
+            if (spot != null) {
+                availableSpots.add(spot);
+            }
+
+            System.out.printf("Vehicle %s exited. Duration: %d min. Fee: ₹%.2f%n", regNumber, duration, fee);
+        } catch (Exception e) {
+            System.out.println("Error releasing vehicle: " + e.getMessage());
         }
-
-        Vehicle v = ticket.getVehicle();
-        long duration = (System.currentTimeMillis() - ticket.getEntryTime()) / (60 * 1000);
-        double fee = feeCalc.calculateFee(duration);
-
-        parkedVehicles.remove(v);
-        activeTickets.remove(regNumber);
-
-        ParkingSpot spot = vehicleSpotMap.remove(regNumber);
-        availableSpots.add(spot);
-
-        System.out.printf("Vehicle %s exited. Duration: %d min. Fee: ₹%.2f%n", regNumber, duration, fee);
     }
-    // ✅ show parked vehicle
 
     public void showParkedVehicles() {
-        if (parkedVehicles.isEmpty()) {
-            System.out.println("No vehicles parked.");
-        } else {
-            for (Vehicle v : parkedVehicles) {
-                ParkingSpot spot = vehicleSpotMap.get(v.getRegNumber());
-                System.out.println("Vehicle: " + v + " | Parked at Spot #" + (spot != null ? spot.getSpotNumber() : "Unknown"));
+        try {
+            if (parkedVehicles.isEmpty()) {
+                System.out.println("No vehicles parked.");
+            } else {
+                for (Vehicle v : parkedVehicles) {
+                    ParkingSpot spot = vehicleSpotMap.get(v.getRegNumber());
+                    System.out.println("Vehicle: " + v + " | Parked at Spot #" + (spot != null ? spot.getSpotNumber() : "Unknown"));
+                }
             }
+        } catch (Exception e) {
+            System.out.println("Error displaying parked vehicles: " + e.getMessage());
         }
     }
 
-    // ✅  Search Vehicle by Registration Number
     public void searchVehicle(String regNo) {
-        Ticket ticket = activeTickets.get(regNo);
-        if (ticket != null) {
-            Vehicle v = ticket.getVehicle();
-            ParkingSpot spot = vehicleSpotMap.get(regNo);
-            System.out.println("Vehicle Found: " + v + " | Parked at Spot #" + (spot != null ? spot.getSpotNumber() : "Unknown"));
-        } else {
-            System.out.println("Vehicle with registration number " + regNo + " not found.");
+        try {
+            Ticket ticket = activeTickets.get(regNo);
+            if (ticket != null) {
+                Vehicle v = ticket.getVehicle();
+                ParkingSpot spot = vehicleSpotMap.get(regNo);
+                System.out.println("Vehicle Found: " + v + " | Parked at Spot #" + (spot != null ? spot.getSpotNumber() : "Unknown"));
+            } else {
+                System.out.println("Vehicle with registration number " + regNo + " not found.");
+            }
+        } catch (Exception e) {
+            System.out.println("Error searching for vehicle: " + e.getMessage());
         }
     }
 
-    // ✅  Show Available Parking Spots
     public void showAvailableSpots() {
-        System.out.println("Available parking spots: " + availableSpots.size());
+        try {
+            System.out.println("Available parking spots: " + availableSpots.size());
+        } catch (Exception e) {
+            System.out.println("Error showing available spots: " + e.getMessage());
+        }
     }
 
-    // ✅  Show Total Vehicles Parked
     public void showTotalVehicles() {
-        System.out.println("Total vehicles currently parked: " + parkedVehicles.size());
+        try {
+            System.out.println("Total vehicles currently parked: " + parkedVehicles.size());
+        } catch (Exception e) {
+            System.out.println("Error showing total vehicles: " + e.getMessage());
+        }
     }
 }
